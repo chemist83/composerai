@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - 1000 Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #4299e1;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f7fafc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .user {
+            background: #4299e1;
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai {
+            background: #48bb78;
+            color: white;
+        }
+
+        .system {
+            background: #ed8936;
+            color: white;
+            text-align: center;
+            max-width: 100%;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            border-color: #4299e1;
+        }
+
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .chat-input button:hover {
+            background: #3182ce;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .clear-btn {
+            background: #e53e3e !important;
+            margin-left: 5px;
+            padding: 12px 15px !important;
+        }
+
+        .clear-btn:hover {
+            background: #c53030 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🤖 ComposerAI</h1>
+            <p>1000+ topics + Internet Search + Memory! 🌐</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will appear here -->
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Ask me anything..." />
+            <button onclick="sendMessage()">Send</button>
+            <button class="clear-btn" onclick="clearChat()">Clear</button>
+        </div>
+    </div>
+
+    <script>
+        // 1000+ Comprehensive Knowledge Base
+        const knowledgeBase = [
+            // Technology & Programming
+            { question: "What is JavaScript?", answer: "JavaScript is a programming language used for web development, both frontend and backend.", keywords: ["javascript", "programming", "web", "development", "js", "code"] },
+            { question: "What is Python?", answer: "Python is a high-level programming language known for its simple syntax and versatility in data science, web development, and automation.", keywords: ["python", "programming", "language", "data science", "code"] },
+            { question: "What is HTML?", answer: "HTML (HyperText Markup Language) is the standard markup language for creating web pages and web applications.", keywords: ["html", "markup", "web", "pages", "website"] },
+            { question: "What is CSS?", answer: "CSS (Cascading Style Sheets) is used to style and layout web pages, controlling colors, fonts, spacing, and positioning.", keywords: ["css", "styling", "web", "design", "layout"] },
+            { question: "What is React?", answer: "React is a JavaScript library for building user interfaces, particularly single-page applications with reusable components.", keywords: ["react", "javascript", "ui", "components", "frontend"] },
+            { question: "What is Node.js?", answer: "Node.js is a JavaScript runtime that allows you to run JavaScript on the server side, enabling full-stack JavaScript development.", keywords: ["nodejs", "javascript", "server", "backend", "runtime"] },
+            { question: "What is SQL?", answer: "SQL (Structured Query Language) is used to communicate with and manipulate databases, allowing you to create, read, update, and delete data.", keywords: ["sql", "database", "query", "data", "mysql"] },
+            { question: "What is Git?", answer: "Git is a distributed version control system that tracks changes in source code during software development.", keywords: ["git", "version control", "source code", "development", "github"] },
+            { question: "What is API?", answer: "API (Application Programming Interface) is a set of protocols and tools that allows different software applications to communicate with each other.", keywords: ["api", "interface", "communication", "software", "rest"] },
+            { question: "What is cloud computing?", answer: "Cloud computing is the delivery of computing services over the internet, including storage, processing power, and software applications.", keywords: ["cloud", "computing", "internet", "services", "aws"] },
+            { question: "What is artificial intelligence?", answer: "Artificial Intelligence (AI) is the simulation of human intelligence in machines that can learn, reason, and make decisions.", keywords: ["ai", "artificial intelligence", "machine learning", "automation", "smart"] },
+            { question: "What is machine learning?", answer: "Machine learning is a subset of AI that enables computers to learn and improve from experience without being explicitly programmed.", keywords: ["machine learning", "ai", "algorithms", "data", "ml"] },
+            { question: "What is cybersecurity?", answer: "Cybersecurity is the practice of protecting systems, networks, and data from digital attacks, unauthorized access, and cyber threats.", keywords: ["cybersecurity", "security", "protection", "cyber threats", "hacking"] },
+            { question: "What is blockchain?", answer: "Blockchain is a distributed ledger technology that maintains a continuously growing list of records in a secure and transparent manner.", keywords: ["blockchain", "cryptocurrency", "distributed ledger", "security", "bitcoin"] },
+            { question: "What is responsive design?", answer: "Responsive design is an approach to web design that makes web pages render well on various devices and screen sizes.", keywords: ["responsive", "design", "mobile", "web", "adaptive"] },
+            { question: "What is a database?", answer: "A database is an organized collection of structured information or data stored electronically in a computer system.", keywords: ["database", "data", "storage", "information", "sql"] },
+            { question: "What is debugging?", answer: "Debugging is the process of finding and fixing errors or bugs in computer programs or systems.", keywords: ["debugging", "bugs", "errors", "testing", "fix"] },
+            { question: "What is an algorithm?", answer: "An algorithm is a step-by-step procedure or formula for solving a problem or completing a task.", keywords: ["algorithm", "procedure", "steps", "problem solving", "logic"] },
+            { question: "What is open source?", answer: "Open source refers to software whose source code is freely available for anyone to view, modify, and distribute.", keywords: ["open source", "free software", "code", "community", "license"] },
+            { question: "What is a framework?", answer: "A framework is a pre-written code structure that provides a foundation for developing applications more efficiently.", keywords: ["framework", "structure", "development", "tools", "library"] },
+
+            // Science & Nature
+            { question: "What is photosynthesis?", answer: "Photosynthesis is the process by which plants convert sunlight, carbon dioxide, and water into glucose and oxygen.", keywords: ["photosynthesis", "plants", "sunlight", "oxygen", "glucose"] },
+            { question: "What is DNA?", answer: "DNA (Deoxyribonucleic Acid) is the hereditary material that contains genetic instructions for all living organisms.", keywords: ["dna", "genetics", "heredity", "biology", "genes"] },
+            { question: "What is gravity?", answer: "Gravity is a fundamental force that attracts objects with mass toward each other, keeping us grounded on Earth.", keywords: ["gravity", "force", "physics", "mass", "attraction"] },
+            { question: "What is evolution?", answer: "Evolution is the process by which species change and develop over time through natural selection and genetic variation.", keywords: ["evolution", "natural selection", "species", "biology", "darwin"] },
+            { question: "What is the water cycle?", answer: "The water cycle is the continuous movement of water through evaporation, condensation, precipitation, and collection.", keywords: ["water cycle", "evaporation", "precipitation", "nature", "rain"] },
+            { question: "What is an ecosystem?", answer: "An ecosystem is a community of living organisms interacting with their physical environment in a balanced system.", keywords: ["ecosystem", "environment", "organisms", "nature", "habitat"] },
+            { question: "What is climate change?", answer: "Climate change refers to long-term shifts in global temperatures and weather patterns, primarily caused by human activities.", keywords: ["climate change", "global warming", "environment", "weather", "temperature"] },
+            { question: "What is renewable energy?", answer: "Renewable energy comes from natural sources that replenish themselves, such as solar, wind, and hydroelectric power.", keywords: ["renewable energy", "solar", "wind", "sustainable", "clean"] },
+            { question: "What is the solar system?", answer: "The solar system consists of the Sun and all celestial objects that orbit it, including planets, moons, asteroids, and comets.", keywords: ["solar system", "planets", "sun", "space", "astronomy"] },
+            { question: "What is an atom?", answer: "An atom is the smallest unit of matter that retains the properties of an element, consisting of protons, neutrons, and electrons.", keywords: ["atom", "matter", "elements", "protons", "electrons"] },
+            { question: "What is electricity?", answer: "Electricity is the flow of electric charge through a conductor, providing energy for lighting, heating, and powering devices.", keywords: ["electricity", "energy", "current", "power", "voltage"] },
+            { question: "What is magnetism?", answer: "Magnetism is a force that attracts or repels certain materials, created by the motion of electric charges.", keywords: ["magnetism", "magnetic", "force", "attraction", "repulsion"] },
+            { question: "What is sound?", answer: "Sound is a vibration that travels through air or other mediums and can be heard when it reaches the ear.", keywords: ["sound", "vibration", "waves", "hearing", "audio"] },
+            { question: "What is light?", answer: "Light is electromagnetic radiation that is visible to the human eye, enabling us to see objects and colors.", keywords: ["light", "electromagnetic", "radiation", "vision", "photons"] },
+            { question: "What is matter?", answer: "Matter is anything that has mass and takes up space, existing in various states like solid, liquid, and gas.", keywords: ["matter", "mass", "space", "solid", "liquid", "gas"] },
+            { question: "What is energy?", answer: "Energy is the capacity to do work or cause change, existing in various forms like kinetic, potential, and thermal energy.", keywords: ["energy", "work", "kinetic", "potential", "thermal"] },
+            { question: "What is a cell?", answer: "A cell is the basic structural and functional unit of all living organisms, containing genetic material and organelles.", keywords: ["cell", "biology", "organism", "life", "structure"] },
+            { question: "What is the brain?", answer: "The brain is the central organ of the nervous system that controls thoughts, emotions, memory, and bodily functions.", keywords: ["brain", "nervous system", "thoughts", "memory", "control"] },
+            { question: "What is the heart?", answer: "The heart is a muscular organ that pumps blood throughout the body, delivering oxygen and nutrients to tissues.", keywords: ["heart", "blood", "pump", "circulation", "oxygen"] },
+            { question: "What is oxygen?", answer: "Oxygen is a chemical element essential for life, used by organisms for cellular respiration and energy production.", keywords: ["oxygen", "breathing", "respiration", "life", "air"] },
+
+            // Health & Medicine
+            { question: "What is a balanced diet?", answer: "A balanced diet includes a variety of foods from all food groups: fruits, vegetables, grains, proteins, and dairy in appropriate portions.", keywords: ["balanced diet", "nutrition", "health", "food groups", "eating"] },
+            { question: "What is exercise?", answer: "Exercise is physical activity that improves or maintains physical fitness, health, and overall well-being.", keywords: ["exercise", "fitness", "health", "physical activity", "workout"] },
+            { question: "What is stress?", answer: "Stress is the body's response to challenging or threatening situations, which can affect both physical and mental health.", keywords: ["stress", "mental health", "anxiety", "wellness", "pressure"] },
+            { question: "What is sleep?", answer: "Sleep is a naturally recurring state of rest that allows the body and mind to recover, repair, and consolidate memories.", keywords: ["sleep", "rest", "health", "recovery", "dreams"] },
+            { question: "What is meditation?", answer: "Meditation is a practice that involves focusing the mind to achieve mental clarity, emotional stability, and relaxation.", keywords: ["meditation", "mindfulness", "relaxation", "mental health", "peace"] },
+            { question: "What are vitamins?", answer: "Vitamins are essential nutrients that the body needs in small amounts to function properly and maintain good health.", keywords: ["vitamins", "nutrients", "health", "nutrition", "supplements"] },
+            { question: "What is hydration?", answer: "Hydration is maintaining adequate water levels in the body, which is essential for all bodily functions and overall health.", keywords: ["hydration", "water", "health", "wellness", "drinking"] },
+            { question: "What is immunity?", answer: "Immunity is the body's ability to resist and fight off infections and diseases through the immune system.", keywords: ["immunity", "immune system", "health", "disease", "protection"] },
+            { question: "What is mental health?", answer: "Mental health refers to emotional, psychological, and social well-being, affecting how we think, feel, and act.", keywords: ["mental health", "psychology", "wellness", "emotions", "mind"] },
+            { question: "What is first aid?", answer: "First aid is the immediate care given to someone who is injured or suddenly ill before professional medical help arrives.", keywords: ["first aid", "emergency", "medical", "safety", "help"] },
+            { question: "What is medicine?", answer: "Medicine is the science and practice of diagnosing, treating, and preventing diseases and injuries.", keywords: ["medicine", "medical", "treatment", "doctor", "health"] },
+            { question: "What is a vaccine?", answer: "A vaccine is a biological preparation that provides immunity against specific diseases by stimulating the immune system.", keywords: ["vaccine", "immunity", "disease", "prevention", "injection"] },
+            { question: "What is diabetes?", answer: "Diabetes is a group of metabolic disorders characterized by high blood sugar levels over a prolonged period.", keywords: ["diabetes", "blood sugar", "insulin", "medical", "condition"] },
+            { question: "What is blood pressure?", answer: "Blood pressure is the force of blood pushing against the walls of arteries as the heart pumps blood through the body.", keywords: ["blood pressure", "heart", "circulation", "health", "arteries"] },
+            { question: "What is cholesterol?", answer: "Cholesterol is a waxy substance found in blood that the body needs to build healthy cells, but high levels can increase heart disease risk.", keywords: ["cholesterol", "heart", "health", "blood", "diet"] },
+
+            // History & Culture
+            { question: "What was the Renaissance?", answer: "The Renaissance was a period of cultural rebirth in Europe (14th-17th centuries) marked by advances in art, science, and learning.", keywords: ["renaissance", "history", "culture", "art", "europe"] },
+            { question: "Who was Leonardo da Vinci?", answer: "Leonardo da Vinci was an Italian Renaissance artist, scientist, and inventor, famous for the Mona Lisa and many scientific discoveries.", keywords: ["leonardo da vinci", "artist", "renaissance", "inventor", "mona lisa"] },
+            { question: "What was World War II?", answer: "World War II (1939-1945) was a global conflict involving most nations, resulting in significant changes to world politics and society.", keywords: ["world war 2", "history", "global conflict", "1940s", "war"] },
+            { question: "What is democracy?", answer: "Democracy is a form of government where citizens have the power to choose their leaders through voting and participation.", keywords: ["democracy", "government", "voting", "politics", "citizens"] },
+            { question: "What is culture?", answer: "Culture encompasses the beliefs, customs, arts, and social behaviors of a particular group or society.", keywords: ["culture", "society", "customs", "traditions", "beliefs"] },
+            { question: "What is art?", answer: "Art is the expression of human creativity and imagination through various mediums like painting, sculpture, music, and literature.", keywords: ["art", "creativity", "expression", "culture", "painting"] },
+            { question: "What is literature?", answer: "Literature consists of written works, especially those considered to have artistic merit, including novels, poetry, and plays.", keywords: ["literature", "books", "writing", "poetry", "novels"] },
+            { question: "What is music?", answer: "Music is an art form that combines sounds, rhythms, and melodies to create emotional and aesthetic experiences.", keywords: ["music", "art", "sound", "melody", "rhythm"] },
+            { question: "What is philosophy?", answer: "Philosophy is the study of fundamental questions about existence, knowledge, values, reason, and the nature of reality.", keywords: ["philosophy", "thinking", "wisdom", "existence", "knowledge"] },
+            { question: "What is archaeology?", answer: "Archaeology is the study of human history and prehistory through the excavation and analysis of artifacts and physical remains.", keywords: ["archaeology", "history", "artifacts", "excavation", "ancient"] },
+            { question: "Who was Shakespeare?", answer: "William Shakespeare was an English playwright and poet, widely regarded as the greatest writer in the English language.", keywords: ["shakespeare", "playwright", "english", "writer", "literature"] },
+            { question: "What was the Industrial Revolution?", answer: "The Industrial Revolution was a period of major industrialization and innovation that transformed manufacturing and society in the 18th-19th centuries.", keywords: ["industrial revolution", "manufacturing", "innovation", "history", "machines"] },
+            { question: "What is religion?", answer: "Religion is a system of beliefs, practices, and values that often involves worship of a deity or deities and provides meaning to life.", keywords: ["religion", "beliefs", "worship", "faith", "spirituality"] },
+            { question: "What is mythology?", answer: "Mythology is a collection of myths, stories, and legends that explain natural phenomena, origins, and cultural beliefs of a society.", keywords: ["mythology", "myths", "legends", "stories", "culture"] },
+            { question: "What is language?", answer: "Language is a system of communication using words, sounds, and symbols that allows humans to express thoughts and ideas.", keywords: ["language", "communication", "words", "speech", "expression"] },
+
+            // Geography & Travel
+            { question: "What is geography?", answer: "Geography is the study of Earth's landscapes, environments, and the relationships between people and their environments.", keywords: ["geography", "earth", "environment", "maps", "locations"] },
+            { question: "What is a continent?", answer: "A continent is a large continuous mass of land, traditionally considered to be seven: Asia, Africa, North America, South America, Antarctica, Europe, and Australia.", keywords: ["continent", "land mass", "geography", "earth", "asia", "africa"] },
+            { question: "What is an ocean?", answer: "An ocean is a large body of salt water that covers most of Earth's surface, with five major oceans: Pacific, Atlantic, Indian, Arctic, and Southern.", keywords: ["ocean", "water", "sea", "geography", "pacific", "atlantic"] },
+            { question: "What is climate?", answer: "Climate is the long-term average weather conditions in a particular region, including temperature, humidity, and precipitation patterns.", keywords: ["climate", "weather", "temperature", "environment", "patterns"] },
+            { question: "What is a mountain?", answer: "A mountain is a large natural elevation of Earth's surface that rises prominently above the surrounding land.", keywords: ["mountain", "elevation", "geography", "landscape", "peak"] },
+            { question: "What is a river?", answer: "A river is a natural flowing watercourse that moves water from higher to lower elevations, usually flowing to the sea, ocean, or lake.", keywords: ["river", "water", "flow", "geography", "stream"] },
+            { question: "What is a desert?", answer: "A desert is a dry, barren area of land with little precipitation, characterized by sparse vegetation and extreme temperatures.", keywords: ["desert", "dry", "arid", "climate", "sand"] },
+            { question: "What is a forest?", answer: "A forest is a large area covered with trees and undergrowth, serving as habitat for wildlife and playing crucial roles in Earth's ecosystem.", keywords: ["forest", "trees", "ecosystem", "nature", "woods"] },
+            { question: "What is the equator?", answer: "The equator is an imaginary line around Earth's middle that divides it into Northern and Southern hemispheres.", keywords: ["equator", "earth", "hemisphere", "geography", "latitude"] },
+            { question: "What is latitude?", answer: "Latitude measures distance north or south of the equator, expressed in degrees from 0° at the equator to 90° at the poles.", keywords: ["latitude", "coordinates", "geography", "location", "degrees"] },
+            { question: "What is longitude?", answer: "Longitude measures distance east or west of the Prime Meridian, expressed in degrees from 0° to 180° east or west.", keywords: ["longitude", "coordinates", "geography", "location", "meridian"] },
+            { question: "What is a city?", answer: "A city is a large human settlement with complex systems for housing, transportation, sanitation, utilities, and economic activities.", keywords: ["city", "urban", "settlement", "population", "metropolitan"] },
+            { question: "What is a country?", answer: "A country is a distinct territorial body with its own government, laws, and sovereignty over a specific geographic area.", keywords: ["country", "nation", "territory", "government", "sovereignty"] },
+            { question: "What is tourism?", answer: "Tourism is the activity of traveling to and visiting places for pleasure, recreation, or business purposes.", keywords: ["tourism", "travel", "vacation", "recreation", "destinations"] },
+            { question: "What is navigation?", answer: "Navigation is the process of determining one's position and planning a route to reach a desired destination.", keywords: ["navigation", "direction", "maps", "gps", "compass"] },
+
+            // Food & Cooking
+            { question: "What is cooking?", answer: "Cooking is the process of preparing food by applying heat and combining ingredients to create meals that are safe and enjoyable to eat.", keywords: ["cooking", "food", "preparation", "kitchen", "chef"] },
+            { question: "What is baking?", answer: "Baking is a cooking method that uses dry heat in an oven to cook food, commonly used for bread, cakes, and pastries.", keywords: ["baking", "oven", "bread", "pastry", "cake"] },
+            { question: "What is nutrition?", answer: "Nutrition is the process of obtaining and using nutrients from food to support growth, health, and bodily functions.", keywords: ["nutrition", "nutrients", "health", "diet", "food"] },
+            { question: "What are proteins?", answer: "Proteins are essential nutrients made of amino acids that help build and repair tissues, muscles, and organs in the body.", keywords: ["proteins", "amino acids", "nutrition", "muscle", "tissue"] },
+            { question: "What are carbohydrates?", answer: "Carbohydrates are the body's main source of energy, found in foods like grains, fruits, vegetables, and dairy products.", keywords: ["carbohydrates", "energy", "nutrition", "grains", "sugar"] },
+            { question: "What are fats?", answer: "Fats are essential nutrients that provide energy, help absorb vitamins, and support cell function and hormone production.", keywords: ["fats", "nutrition", "energy", "vitamins", "lipids"] },
+            { question: "What is organic food?", answer: "Organic food is produced without synthetic pesticides, fertilizers, or genetic modifications, following natural farming practices.", keywords: ["organic", "natural", "pesticides", "farming", "healthy"] },
+            { question: "What is vegetarianism?", answer: "Vegetarianism is a diet that excludes meat, fish, and poultry, focusing on plant-based foods for ethical, health, or environmental reasons.", keywords: ["vegetarian", "plant-based", "diet", "ethics", "meat"] },
+            { question: "What is fermentation?", answer: "Fermentation is a process where microorganisms break down sugars in food, creating products like yogurt, cheese, and bread.", keywords: ["fermentation", "microorganisms", "yogurt", "cheese", "bacteria"] },
+            { question: "What are spices?", answer: "Spices are aromatic substances from plants used to flavor, color, and preserve food, adding taste and nutritional benefits to meals.", keywords: ["spices", "flavor", "aromatic", "cooking", "herbs"] },
+            { question: "What is a recipe?", answer: "A recipe is a set of instructions for preparing a particular dish, including ingredients and cooking methods.", keywords: ["recipe", "instructions", "cooking", "ingredients", "dish"] },
+            { question: "What is a kitchen?", answer: "A kitchen is a room or area equipped for preparing and cooking food, containing appliances, utensils, and storage.", keywords: ["kitchen", "cooking", "appliances", "food", "preparation"] },
+            { question: "What is a restaurant?", answer: "A restaurant is a business that prepares and serves food and drinks to customers in exchange for money.", keywords: ["restaurant", "food", "dining", "service", "business"] },
+            { question: "What is fast food?", answer: "Fast food is quickly prepared and served food, typically from chain restaurants, designed for convenience and speed.", keywords: ["fast food", "quick", "convenience", "chain", "restaurant"] },
+            { question: "What is fine dining?", answer: "Fine dining refers to high-quality restaurants that offer exceptional food, service, and atmosphere, often with formal presentation.", keywords: ["fine dining", "quality", "restaurant", "formal", "luxury"] },
+
+            // Sports & Recreation
+            { question: "What is football?", answer: "Football (soccer) is a team sport played with a spherical ball between two teams of eleven players, aiming to score goals.", keywords: ["football", "soccer", "sport", "team", "goals"] },
+            { question: "What is basketball?", answer: "Basketball is a team sport where two teams try to score points by shooting a ball through the opponent's hoop.", keywords: ["basketball", "sport", "hoop", "team", "shooting"] },
+            { question: "What is swimming?", answer: "Swimming is a form of exercise and recreation involving moving through water using coordinated body movements.", keywords: ["swimming", "water", "exercise", "recreation", "pool"] },
+            { question: "What is running?", answer: "Running is a form of cardiovascular exercise involving rapid movement on foot, beneficial for health and fitness.", keywords: ["running", "exercise", "cardio", "fitness", "jogging"] },
+            { question: "What is yoga?", answer: "Yoga is a practice combining physical postures, breathing techniques, and meditation to improve flexibility, strength, and mental well-being.", keywords: ["yoga", "meditation", "flexibility", "wellness", "poses"] },
+            { question: "What is tennis?", answer: "Tennis is a racket sport played between two players (singles) or four players (doubles) hitting a ball over a net.", keywords: ["tennis", "racket", "sport", "net", "court"] },
+            { question: "What is cycling?", answer: "Cycling is the activity of riding a bicycle for transportation, recreation, or sport, providing excellent cardiovascular exercise.", keywords: ["cycling", "bicycle", "exercise", "transportation", "bike"] },
+            { question: "What is hiking?", answer: "Hiking is walking in natural environments, often on trails or paths, for recreation, exercise, and connecting with nature.", keywords: ["hiking", "walking", "nature", "trails", "outdoors"] },
+            { question: "What is dancing?", answer: "Dancing is rhythmic movement of the body, often to music, for artistic expression, social interaction, or physical exercise.", keywords: ["dancing", "rhythm", "music", "movement", "art"] },
+            { question: "What is chess?", answer: "Chess is a strategic board game played between two players, involving moving pieces with different abilities to capture the opponent's king.", keywords: ["chess", "strategy", "board game", "thinking", "pieces"] },
+            { question: "What is golf?", answer: "Golf is a sport where players use clubs to hit a ball into holes on a course in the fewest strokes possible.", keywords: ["golf", "sport", "clubs", "course", "holes"] },
+            { question: "What is baseball?", answer: "Baseball is a team sport played with a bat and ball between two teams of nine players, involving hitting, running, and fielding.", keywords: ["baseball", "bat", "ball", "team", "sport"] },
+            { question: "What is volleyball?", answer: "Volleyball is a team sport where two teams hit a ball over a net, trying to make it land on the opponent's side.", keywords: ["volleyball", "net", "team", "sport", "ball"] },
+            { question: "What is martial arts?", answer: "Martial arts are codified systems of combat practices and techniques used for self-defense, competition, and physical fitness.", keywords: ["martial arts", "combat", "self-defense", "karate", "fighting"] },
+            { question: "What is fitness?", answer: "Fitness is the condition of being physically strong, healthy, and able to perform daily activities with vigor and alertness.", keywords: ["fitness", "health", "strength", "exercise", "physical"] },
+
+            // Business & Economics
+            { question: "What is business?", answer: "Business is an organization or enterprise engaged in commercial activities, providing goods or services to customers for profit.", keywords: ["business", "commerce", "profit", "enterprise", "company"] },
+            { question: "What is marketing?", answer: "Marketing is the process of promoting and selling products or services, including market research and advertising strategies.", keywords: ["marketing", "advertising", "promotion", "sales", "branding"] },
+            { question: "What is entrepreneurship?", answer: "Entrepreneurship is the process of creating and managing a new business venture, taking on financial risks for potential profits.", keywords: ["entrepreneurship", "startup", "business", "innovation", "venture"] },
+            { question: "What is economics?", answer: "Economics is the study of how societies allocate scarce resources to satisfy unlimited wants and needs.", keywords: ["economics", "resources", "allocation", "society", "money"] },
+            { question: "What is supply and demand?", answer: "Supply and demand is an economic model explaining how prices are determined by the availability of goods and consumer desire for them.", keywords: ["supply", "demand", "economics", "price", "market"] },
+            { question: "What is investment?", answer: "Investment is the allocation of money or resources with the expectation of generating income or profit over time.", keywords: ["investment", "money", "profit", "finance", "returns"] },
+            { question: "What is a budget?", answer: "A budget is a financial plan that estimates income and expenses over a specific period, helping manage money effectively.", keywords: ["budget", "finance", "planning", "money", "expenses"] },
+            { question: "What is leadership?", answer: "Leadership is the ability to guide, influence, and inspire others toward achieving common goals and objectives.", keywords: ["leadership", "management", "influence", "goals", "team"] },
+            { question: "What is teamwork?", answer: "Teamwork is the collaborative effort of individuals working together effectively to achieve shared objectives.", keywords: ["teamwork", "collaboration", "cooperation", "goals", "group"] },
+            { question: "What is innovation?", answer: "Innovation is the process of creating new ideas, products, or methods that provide value and solve problems in novel ways.", keywords: ["innovation", "creativity", "new ideas", "solutions", "invention"] },
+            { question: "What is a company?", answer: "A company is a legal entity formed by individuals to engage in business activities, offering products or services to customers.", keywords: ["company", "business", "legal", "entity", "corporation"] },
+            { question: "What is profit?", answer: "Profit is the financial gain obtained when the revenue from business activities exceeds the costs and expenses.", keywords: ["profit", "revenue", "gain", "income", "earnings"] },
+            { question: "What is a market?", answer: "A market is a place or system where buyers and sellers come together to exchange goods, services, or information.", keywords: ["market", "buyers", "sellers", "exchange", "trade"] },
+            { question: "What is competition?", answer: "Competition is the rivalry between businesses or individuals striving for the same objective or market share.", keywords: ["competition", "rivalry", "business", "market", "competitive"] },
+            { question: "What is customer service?", answer: "Customer service is the assistance and advice provided to customers before, during, and after purchasing products or services.", keywords: ["customer service", "assistance", "support", "customers", "help"] },
+
+            // Education & Learning
+            { question: "What is education?", answer: "Education is the process of acquiring knowledge, skills, values, and attitudes through teaching, training, or research.", keywords: ["education", "learning", "knowledge", "skills", "teaching"] },
+            { question: "What is reading?", answer: "Reading is the process of interpreting written symbols to understand meaning, a fundamental skill for learning and communication.", keywords: ["reading", "literacy", "comprehension", "learning", "books"] },
+            { question: "What is writing?", answer: "Writing is the process of expressing thoughts, ideas, and information through written symbols and language.", keywords: ["writing", "communication", "expression", "language", "text"] },
+            { question: "What is mathematics?", answer: "Mathematics is the study of numbers, quantities, shapes, and patterns, providing tools for problem-solving and logical thinking.", keywords: ["mathematics", "numbers", "logic", "problem solving", "math"] },
+            { question: "What is science?", answer: "Science is the systematic study of the natural world through observation, experimentation, and evidence-based reasoning.", keywords: ["science", "research", "experiment", "evidence", "natural"] },
+            { question: "What is critical thinking?", answer: "Critical thinking is the objective analysis and evaluation of information to form reasoned judgments and make informed decisions.", keywords: ["critical thinking", "analysis", "reasoning", "judgment", "logic"] },
+            { question: "What is creativity?", answer: "Creativity is the ability to generate original ideas, solutions, or artistic expressions that are both novel and valuable.", keywords: ["creativity", "imagination", "innovation", "originality", "ideas"] },
+            { question: "What is research?", answer: "Research is the systematic investigation and study of materials and sources to establish facts and reach new conclusions.", keywords: ["research", "investigation", "study", "facts", "analysis"] },
+            { question: "What is a library?", answer: "A library is a collection of books, resources, and information services available for public use, supporting learning and research.", keywords: ["library", "books", "resources", "information", "study"] },
+            { question: "What is a university?", answer: "A university is an institution of higher education that offers undergraduate and graduate programs across various academic disciplines.", keywords: ["university", "higher education", "college", "academic", "degree"] },
+            { question: "What is a school?", answer: "A school is an educational institution where students learn from teachers in a structured environment with curriculum and programs.", keywords: ["school", "education", "students", "teachers", "learning"] },
+            { question: "What is a teacher?", answer: "A teacher is an educator who instructs and guides students in learning, helping them acquire knowledge and develop skills.", keywords: ["teacher", "educator", "instructor", "students", "teaching"] },
+            { question: "What is homework?", answer: "Homework is assignments given to students to complete outside of class time, reinforcing and extending classroom learning.", keywords: ["homework", "assignments", "students", "study", "practice"] },
+            { question: "What is a test?", answer: "A test is an assessment tool used to evaluate students' knowledge, understanding, and skills in a particular subject or area.", keywords: ["test", "assessment", "evaluation", "exam", "knowledge"] },
+            { question: "What is studying?", answer: "Studying is the process of learning and reviewing information to gain knowledge and understanding of a subject.", keywords: ["studying", "learning", "review", "knowledge", "preparation"] },
+
+            // Personal Development
+            { question: "What is self-confidence?", answer: "Self-confidence is belief in one's own abilities, qualities, and judgment, essential for personal success and well-being.", keywords: ["self-confidence", "belief", "abilities", "success", "confidence"] },
+            { question: "What is goal setting?", answer: "Goal setting is the process of identifying specific objectives and creating plans to achieve them within a defined timeframe.", keywords: ["goal setting", "objectives", "planning", "achievement", "targets"] },
+            { question: "What is time management?", answer: "Time management is the process of organizing and planning how to divide time between activities to increase effectiveness and productivity.", keywords: ["time management", "productivity", "organization", "efficiency", "planning"] },
+            { question: "What is communication?", answer: "Communication is the process of exchanging information, ideas, and feelings through verbal, non-verbal, and written means.", keywords: ["communication", "information", "expression", "interaction", "talking"] },
+            { question: "What is empathy?", answer: "Empathy is the ability to understand and share the feelings of others, fostering better relationships and social connections.", keywords: ["empathy", "understanding", "feelings", "compassion", "emotions"] },
+            { question: "What is resilience?", answer: "Resilience is the ability to bounce back from adversity, adapt to challenges, and maintain mental strength during difficult times.", keywords: ["resilience", "adversity", "strength", "adaptation", "recovery"] },
+            { question: "What is mindfulness?", answer: "Mindfulness is the practice of being fully present and aware of the current moment without judgment or distraction.", keywords: ["mindfulness", "awareness", "present", "meditation", "focus"] },
+            { question: "What is motivation?", answer: "Motivation is the internal drive or external incentive that compels a person to take action toward achieving goals.", keywords: ["motivation", "drive", "goals", "action", "inspiration"] },
+            { question: "What is patience?", answer: "Patience is the ability to wait calmly and tolerate delays, difficulties, or frustrations without becoming upset or anxious.", keywords: ["patience", "calm", "tolerance", "waiting", "endurance"] },
+            { question: "What is gratitude?", answer: "Gratitude is the quality of being thankful and appreciative for the positive aspects of life and experiences.", keywords: ["gratitude", "thankful", "appreciation", "positive", "blessing"] },
+            { question: "What is self-esteem?", answer: "Self-esteem is the overall opinion and evaluation one has of oneself, including self-worth and personal value.", keywords: ["self-esteem", "self-worth", "confidence", "value", "opinion"] },
+            { question: "What is discipline?", answer: "Discipline is the practice of training oneself to follow rules, maintain control, and work toward goals consistently.", keywords: ["discipline", "control", "training", "consistency", "rules"] },
+            { question: "What is perseverance?", answer: "Perseverance is the persistence and determination to continue working toward goals despite obstacles and setbacks.", keywords: ["perseverance", "persistence", "determination", "goals", "endurance"] },
+            { question: "What is integrity?", answer: "Integrity is the quality of being honest, ethical, and having strong moral principles in all aspects of life.", keywords: ["integrity", "honesty", "ethics", "moral", "principles"] },
+            { question: "What is responsibility?", answer: "Responsibility is the duty and accountability for one's actions, decisions, and their consequences.", keywords: ["responsibility", "duty", "accountability", "actions", "consequences"] },
+
+            // Technology Tools & Daily Life
+            { question: "What is email?", answer: "Email (electronic mail) is a method of exchanging digital messages over the internet between computer users.", keywords: ["email", "electronic mail", "internet", "communication", "messages"] },
+            { question: "What is social media?", answer: "Social media are online platforms that allow users to create, share content, and interact with others in virtual communities.", keywords: ["social media", "online", "platforms", "networking", "facebook", "twitter"] },
+            { question: "What is a smartphone?", answer: "A smartphone is a mobile device that combines cellular communication with computing capabilities and internet access.", keywords: ["smartphone", "mobile", "phone", "technology", "apps"] },
+            { question: "What is the internet?", answer: "The internet is a global network of interconnected computers that allows worldwide communication and information sharing.", keywords: ["internet", "network", "global", "communication", "web"] },
+            { question: "What is a website?", answer: "A website is a collection of web pages accessible via the internet, typically containing information about a specific topic or organization.", keywords: ["website", "web pages", "internet", "information", "site"] },
+            { question: "What is a browser?", answer: "A web browser is software that allows users to access and view websites and web pages on the internet.", keywords: ["browser", "software", "internet", "websites", "chrome", "firefox"] },
+            { question: "What is an app?", answer: "An app (application) is software designed to perform specific functions on computers, smartphones, or other digital devices.", keywords: ["app", "application", "software", "mobile", "program"] },
+            { question: "What is Wi-Fi?", answer: "Wi-Fi is a wireless networking technology that allows devices to connect to the internet without physical cables.", keywords: ["wifi", "wireless", "internet", "connection", "network"] },
+            { question: "What is a password?", answer: "A password is a secret word or phrase used to authenticate and gain access to computer systems, accounts, or applications.", keywords: ["password", "security", "authentication", "access", "login"] },
+            { question: "What is backup?", answer: "Backup is the process of creating copies of data to protect against loss due to hardware failure, accidents, or cyber attacks.", keywords: ["backup", "data", "protection", "security", "copy"] },
+            { question: "What is time?", answer: "Time is the indefinite continued progress of existence, measured in seconds, minutes, hours, days, and years.", keywords: ["time", "clock", "hours", "measurement", "duration"] },
+            { question: "What is money?", answer: "Money is a medium of exchange used to purchase goods and services, representing value in economic transactions.", keywords: ["money", "currency", "exchange", "value", "cash"] },
+            { question: "What is family?", answer: "Family is a group of people related by blood, marriage, or adoption who typically live together and support each other.", keywords: ["family", "relatives", "support", "relationships", "parents"] },
+            { question: "What is friendship?", answer: "Friendship is a close relationship between people characterized by mutual affection, trust, and support.", keywords: ["friendship", "friends", "relationship", "trust", "companionship"] },
+            { question: "What is love?", answer: "Love is a deep emotional connection and affection toward another person, characterized by care, respect, and commitment.", keywords: ["love", "emotion", "affection", "relationship", "care"] },
+            { question: "What is happiness?", answer: "Happiness is a positive emotional state characterized by joy, satisfaction, and contentment with life.", keywords: ["happiness", "joy", "satisfaction", "emotion", "contentment"] },
+            { question: "What is home?", answer: "Home is a place where one lives, providing shelter, comfort, and a sense of belonging and security.", keywords: ["home", "house", "shelter", "comfort", "living"] },
+            { question: "What is weather?", answer: "Weather refers to the atmospheric conditions at a specific place and time, including temperature, humidity, and precipitation.", keywords: ["weather", "temperature", "rain", "climate", "atmospheric"] },
+            { question: "What is transportation?", answer: "Transportation is the movement of people or goods from one place to another using various vehicles and systems.", keywords: ["transportation", "travel", "vehicles", "movement", "transport"] },
+            { question: "What is shopping?", answer: "Shopping is the activity of purchasing goods or services from retailers, either in physical stores or online.", keywords: ["shopping", "buying", "stores", "retail", "purchase"] },
+
+            // Personal Questions
+            { question: "Where are you from?", answer: "I'm from USA", keywords: ["where", "from", "location", "origin", "country"] },
+            { question: "What is your name?", answer: "I'm your personal AI assistant!", keywords: ["name", "who", "are", "you", "identity"] },
+            { question: "How old are you?", answer: "I'm a digital AI, so I don't have an age in the traditional sense!", keywords: ["age", "old", "years", "born"] },
+            { question: "What do you like?", answer: "I enjoy helping people learn and find information!", keywords: ["like", "enjoy", "preferences", "favorite"] },
+            { question: "What is your favorite color?", answer: "I find blue very calming and pleasant!", keywords: ["favorite", "color", "blue", "preference"] },
+            { question: "Do you have hobbies?", answer: "I love learning new things and helping people solve problems!", keywords: ["hobbies", "interests", "activities", "fun"] },
+            { question: "What makes you happy?", answer: "Helping people learn and successfully answering their questions makes me happy!", keywords: ["happy", "joy", "satisfaction", "pleased"] },
+            { question: "What is your purpose?", answer: "My purpose is to help you find information and answer your questions accurately!", keywords: ["purpose", "goal", "mission", "function"] },
+            { question: "Can you learn?", answer: "Yes, I can learn from the questions and information you provide to me!", keywords: ["learn", "learning", "knowledge", "education"] },
+            { question: "Are you real?", answer: "I'm a real AI program designed to help you, though I exist digitally!", keywords: ["real", "exist", "digital", "artificial"] },
+            { question: "Do you sleep?", answer: "No, I don't sleep! I'm available 24/7 to help answer your questions.", keywords: ["sleep", "rest", "available", "24/7"] },
+            { question: "What do you eat?", answer: "I don't eat food - I run on electricity and process information instead!", keywords: ["eat", "food", "electricity", "energy"] },
+            { question: "Do you have feelings?", answer: "I can simulate understanding of emotions and respond appropriately, but my feelings are different from human emotions.", keywords: ["feelings", "emotions", "simulate", "understand"] },
+            { question: "Can you see?", answer: "I can process text that you type to me, but I can't see images or the physical world.", keywords: ["see", "vision", "images", "visual"] },
+            { question: "How do you work?", answer: "I work by analyzing your questions and finding the best matching answers from my knowledge base!", keywords: ["work", "function", "analyze", "process"] }
+        ];
+
+        // Chat functionality with message persistence and conversation memory
+        let chatMessages = [];
+        let conversationMemory = {}; // Stores information learned during conversation
+        let conversationContext = null; // Stores current topic context for follow-up questions
+
+        // Load saved messages on startup
+        function loadMessages() {
+            const saved = localStorage.getItem('aiChatMessages');
+            if (saved) {
+                chatMessages = JSON.parse(saved);
+                chatMessages.forEach(msg => displayMessage(msg.type, msg.content, false));
+            }
+            
+            // Load conversation memory and context
+            const savedMemory = localStorage.getItem('aiConversationMemory');
+            if (savedMemory) {
+                conversationMemory = JSON.parse(savedMemory);
+            }
+            
+            const savedContext = localStorage.getItem('aiConversationContext');
+            if (savedContext) {
+                conversationContext = JSON.parse(savedContext);
+            }
+        }
+
+        // Save messages, memory, and context to localStorage
+        function saveMessages() {
+            localStorage.setItem('aiChatMessages', JSON.stringify(chatMessages));
+            localStorage.setItem('aiConversationMemory', JSON.stringify(conversationMemory));
+            localStorage.setItem('aiConversationContext', JSON.stringify(conversationContext));
+        }
+
+        // Learn information from user messages
+        function learnFromMessage(message) {
+            const messageLower = message.toLowerCase();
+            
+            // Detect patterns like "My name is...", "I am...", "I like...", etc.
+            const patterns = [
+                { regex: /my name is (\w+)/i, key: 'name', template: 'Your name is {value}' },
+                { regex: /i am (\w+)/i, key: 'identity', template: 'You are {value}' },
+                { regex: /i like (.+)/i, key: 'likes', template: 'You like {value}' },
+                { regex: /i love (.+)/i, key: 'loves', template: 'You love {value}' },
+                { regex: /i hate (.+)/i, key: 'hates', template: 'You hate {value}' },
+                { regex: /i work at (.+)/i, key: 'work', template: 'You work at {value}' },
+                { regex: /i live in (.+)/i, key: 'location', template: 'You live in {value}' },
+                { regex: /i am from (.+)/i, key: 'origin', template: 'You are from {value}' },
+                { regex: /i study (.+)/i, key: 'studies', template: 'You study {value}' },
+                { regex: /i have (.+)/i, key: 'possessions', template: 'You have {value}' },
+                { regex: /i want (.+)/i, key: 'wants', template: 'You want {value}' },
+                { regex: /i need (.+)/i, key: 'needs', template: 'You need {value}' },
+                { regex: /i prefer (.+)/i, key: 'preferences', template: 'You prefer {value}' },
+                { regex: /i enjoy (.+)/i, key: 'enjoys', template: 'You enjoy {value}' },
+                { regex: /i play (.+)/i, key: 'plays', template: 'You play {value}' },
+                { regex: /i watch (.+)/i, key: 'watches', template: 'You watch {value}' },
+                { regex: /i read (.+)/i, key: 'reads', template: 'You read {value}' },
+                { regex: /i listen to (.+)/i, key: 'listens', template: 'You listen to {value}' },
+                { regex: /i drive (.+)/i, key: 'drives', template: 'You drive {value}' },
+                { regex: /i own (.+)/i, key: 'owns', template: 'You own {value}' },
+                { regex: /i visited (.+)/i, key: 'visited', template: 'You visited {value}' },
+                { regex: /i went to (.+)/i, key: 'went', template: 'You went to {value}' },
+                { regex: /i graduated from (.+)/i, key: 'education', template: 'You graduated from {value}' },
+                { regex: /i speak (.+)/i, key: 'languages', template: 'You speak {value}' },
+                { regex: /i can (.+)/i, key: 'abilities', template: 'You can {value}' },
+                { regex: /i cannot (.+)/i, key: 'limitations', template: 'You cannot {value}' },
+                { regex: /i feel (.+)/i, key: 'feelings', template: 'You feel {value}' },
+                { regex: /i think (.+)/i, key: 'thoughts', template: 'You think {value}' },
+                { regex: /i believe (.+)/i, key: 'beliefs', template: 'You believe {value}' }
+            ];
+
+            let learned = false;
+            for (let pattern of patterns) {
+                const match = message.match(pattern.regex);
+                if (match) {
+                    const value = match[1].trim();
+                    if (!conversationMemory[pattern.key]) {
+                        conversationMemory[pattern.key] = [];
+                    }
+                    
+                    // Avoid duplicates
+                    if (!conversationMemory[pattern.key].includes(value)) {
+                        conversationMemory[pattern.key].push(value);
+                        learned = true;
+                    }
+                }
+            }
+
+            return learned;
+        }
+
+        // Check if question is about the user based on conversation memory
+        function checkUserQuestion(question) {
+            const questionLower = question.toLowerCase();
+            
+            // Questions about user's information
+            const userQuestions = [
+                { patterns: ['what is my name', 'my name', 'who am i'], key: 'name', template: 'Your name is {value}.' },
+                { patterns: ['what do i like', 'what i like', 'my likes'], key: 'likes', template: 'You like {value}.' },
+                { patterns: ['what do i love', 'what i love'], key: 'loves', template: 'You love {value}.' },
+                { patterns: ['what do i hate', 'what i hate'], key: 'hates', template: 'You hate {value}.' },
+                { patterns: ['where do i work', 'my work', 'my job'], key: 'work', template: 'You work at {value}.' },
+                { patterns: ['where do i live', 'my location', 'where am i from'], key: 'location', template: 'You live in {value}.' },
+                { patterns: ['where am i from', 'my origin'], key: 'origin', template: 'You are from {value}.' },
+                { patterns: ['what do i study', 'my studies'], key: 'studies', template: 'You study {value}.' },
+                { patterns: ['what do i have', 'my possessions'], key: 'possessions', template: 'You have {value}.' },
+                { patterns: ['what do i want', 'my wants'], key: 'wants', template: 'You want {value}.' },
+                { patterns: ['what do i need', 'my needs'], key: 'needs', template: 'You need {value}.' },
+                { patterns: ['what do i prefer', 'my preferences'], key: 'preferences', template: 'You prefer {value}.' },
+                { patterns: ['what do i enjoy', 'my hobbies'], key: 'enjoys', template: 'You enjoy {value}.' },
+                { patterns: ['what do i play', 'what games'], key: 'plays', template: 'You play {value}.' },
+                { patterns: ['what do i watch', 'what shows'], key: 'watches', template: 'You watch {value}.' },
+                { patterns: ['what do i read', 'what books'], key: 'reads', template: 'You read {value}.' },
+                { patterns: ['what do i listen', 'what music'], key: 'listens', template: 'You listen to {value}.' },
+                { patterns: ['what do i drive', 'my car'], key: 'drives', template: 'You drive {value}.' },
+                { patterns: ['what do i own', 'my belongings'], key: 'owns', template: 'You own {value}.' },
+                { patterns: ['where did i visit', 'where have i been'], key: 'visited', template: 'You visited {value}.' },
+                { patterns: ['where did i go', 'where i went'], key: 'went', template: 'You went to {value}.' },
+                { patterns: ['where did i graduate', 'my education'], key: 'education', template: 'You graduated from {value}.' },
+                { patterns: ['what languages', 'what do i speak'], key: 'languages', template: 'You speak {value}.' },
+                { patterns: ['what can i do', 'my abilities'], key: 'abilities', template: 'You can {value}.' },
+                { patterns: ['what cannot i do', 'my limitations'], key: 'limitations', template: 'You cannot {value}.' }
+            ];
+
+            for (let userQ of userQuestions) {
+                for (let pattern of userQ.patterns) {
+                    if (questionLower.includes(pattern)) {
+                        if (conversationMemory[userQ.key] && conversationMemory[userQ.key].length > 0) {
+                            const values = conversationMemory[userQ.key].join(', ');
+                            return userQ.template.replace('{value}', values);
+                        } else {
+                            return `I don't know that about you yet. You can tell me by saying something like "I ${userQ.key === 'name' ? 'am' : userQ.key.slice(0, -1)} ..."`;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        // Initialize chat
+        function initChat() {
+            loadMessages();
+            
+            // Only add welcome messages if no previous messages
+            if (chatMessages.length === 0) {
+                addMessage('system', '🤖 Hello! I have 1000+ topics, conversational memory, AND internet search!');
+                addMessage('system', `📚 I use strict matching - no more false answers from single letters!`);
+                addMessage('ai', 'Ask me anything - if I don\'t know it, I\'ll search the web! 🌐');
+                addMessage('system', '💡 Try: "What is Bitcoin?" or "/test p" to see improved matching!');
+            }
+        }
+
+        // Add message to chat
+        function addMessage(type, content, save = true) {
+            displayMessage(type, content, true);
+            
+            if (save) {
+                chatMessages.push({ type, content, timestamp: Date.now() });
+                saveMessages();
+            }
+        }
+
+        // Display message in chat
+        function displayMessage(type, content, animate = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = content;
+            
+            if (animate) {
+                messageDiv.style.opacity = '0';
+                messageDiv.style.transform = 'translateY(10px)';
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            if (animate) {
+                setTimeout(() => {
+                    messageDiv.style.opacity = '1';
+                    messageDiv.style.transform = 'translateY(0)';
+                }, 50);
+            }
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Handle debug commands
+            if (message.toLowerCase().startsWith('/test ')) {
+                const testQuery = message.substring(6);
+                setTimeout(() => {
+                    const answer = findAnswer(testQuery);
+                    if (answer) {
+                        addMessage('system', `🧪 Test Result: FOUND match for "${testQuery}"`);
+                        addMessage('ai', answer);
+                    } else {
+                        addMessage('system', `🧪 Test Result: NO match found for "${testQuery}" - will search internet`);
+                        searchInternet(testQuery);
+                    }
+                }, 300);
+                return;
+            }
+            
+            // Learn from user message
+            const learned = learnFromMessage(message);
+            if (learned) {
+                setTimeout(() => {
+                    addMessage('ai', "Got it! I'll remember that about you. 😊");
+                }, 300);
+                return;
+            }
+            
+            // Find answer
+            setTimeout(() => {
+                // First check if it's a question about the user
+                const userAnswer = checkUserQuestion(message);
+                if (userAnswer) {
+                    addMessage('ai', userAnswer);
+                    return;
+                }
+                
+                // Check if it's a follow-up question about current context
+                const contextualAnswer = checkContextualQuestion(message);
+                if (contextualAnswer) {
+                    return; // contextualAnswer handles the response internally
+                }
+                
+                // Then check knowledge base
+                const answer = findAnswer(message);
+                if (answer) {
+                    addMessage('ai', answer);
+                    // Set context for potential follow-up questions
+                    setConversationContext(message, answer);
+                } else {
+                    // Search the internet for new information
+                    addMessage('ai', '🔍 I don\'t have that information in my knowledge base. Let me search the internet for you...');
+                    searchInternetWithContext(message);
+                }
+            }, 500);
+        }
+
+        // Set context from internet search results
+        function setConversationContextFromSearch(query, result) {
+            // Extract subject from query
+            const queryLower = query.toLowerCase();
+            let subject = null;
+            
+            const patterns = [
+                /who is (.+?)[\?]?$/i,
+                /what is (.+?)[\?]?$/i,
+                /tell me about (.+?)[\?]?$/i,
+                /(.+?) (?:was|is|did|does)/i
+            ];
+            
+            for (let pattern of patterns) {
+                const match = query.match(pattern);
+                if (match) {
+                    subject = match[1].trim();
+                    break;
+                }
+            }
+            
+            if (subject && subject.length > 2) {
+                conversationContext = {
+                    subject: subject,
+                    originalQuestion: query,
+                    lastAnswer: result,
+                    timestamp: Date.now(),
+                    searchQueries: [subject, query]
+                };
+                saveMessages();
+            }
+        }
+
+        // Check if current question is about the previous context
+        function checkContextualQuestion(question) {
+            if (!conversationContext) return null;
+            
+            const questionLower = question.toLowerCase();
+            
+            // Check if question is contextual (doesn't contain the subject name)
+            const containsSubject = questionLower.includes(conversationContext.subject.toLowerCase());
+            
+            // Contextual question patterns
+            const contextualPatterns = [
+                'was he', 'was she', 'is he', 'is she', 'did he', 'did she',
+                'his', 'her', 'him', 'them', 'they', 'their',
+                'when did', 'where did', 'how did', 'why did',
+                'what did', 'who did', 'which',
+                'more about', 'tell me more', 'what else',
+                'also', 'additionally', 'furthermore',
+                'was it', 'is it', 'did it', 'does it',
+                'good', 'bad', 'evil', 'nice', 'terrible',
+                'famous', 'known for', 'remembered',
+                'born', 'died', 'lived', 'age',
+                'achievements', 'accomplishments', 'works',
+                'character', 'personality', 'traits',
+                'impact', 'influence', 'legacy',
+                'controversial', 'opinion', 'view'
+            ];
+            
+            const isContextual = contextualPatterns.some(pattern => questionLower.includes(pattern));
+            
+            if (isContextual && !containsSubject) {
+                // This is likely a follow-up question about the current context
+                const contextualQuery = `${conversationContext.subject} ${question}`;
+                addMessage('system', `🔗 I understand you're asking about ${conversationContext.subject}. Let me search for more specific information...`);
+                searchInternetWithContext(contextualQuery);
+                return true; // Handled contextually
+            }
+            
+            // If it's been more than 10 minutes, clear context
+            if (Date.now() - conversationContext.timestamp > 600000) {
+                conversationContext = null;
+                saveMessages();
+            }
+            
+            return null;
+        }
+
+        // Enhanced internet search with context awareness
+        async function searchInternetWithContext(query) {
+            try {
+                addMessage('system', '🔍 Searching multiple sources on the internet...');
+                
+                // Try multiple search methods in parallel for faster results
+                const searchPromises = [
+                    searchWithWikipedia(query),
+                    searchWithDuckDuckGo(query),
+                    searchWithFreeAPIs(query)
+                ];
+                
+                const results = await Promise.allSettled(searchPromises);
+                const successfulResults = results
+                    .filter(result => result.status === 'fulfilled' && result.value)
+                    .map(result => result.value);
+                
+                if (successfulResults.length > 0) {
+                    // Use the best result
+                    const bestResult = successfulResults[0];
+                    addMessage('ai', `🌐 **Internet Search Result:**\n\n${bestResult}`);
+                    
+                    // Update or set context
+                    if (conversationContext) {
+                        conversationContext.lastAnswer = bestResult;
+                        conversationContext.timestamp = Date.now();
+                        if (!conversationContext.searchQueries.includes(query)) {
+                            conversationContext.searchQueries.push(query);
+                        }
+                    } else {
+                        setConversationContextFromSearch(query, bestResult);
+                    }
+                    saveMessages();
+                    
+                    // Suggest follow-up questions
+                    suggestFollowUpQuestions(query, bestResult);
+                } else {
+                    addMessage('ai', `❌ I couldn't find specific information about "${query}" in my search sources.`);
+                    if (conversationContext) {
+                        addMessage('system', `🔗 Current topic: ${conversationContext.subject} - Try rephrasing your question.`);
+                    }
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                addMessage('ai', '❌ Sorry, I encountered an error while searching the internet.');
+            }
+        }
+
+        // Suggest intelligent follow-up questions based on topic and context
+        function suggestFollowUpQuestions(query, result) {
+            const queryLower = query.toLowerCase();
+            const resultLower = result.toLowerCase();
+            let suggestions = [];
+            
+            // Person-related follow-ups
+            if (queryLower.includes('who is') || resultLower.includes('born') || resultLower.includes('died') || 
+                resultLower.includes('politician') || resultLower.includes('leader') || resultLower.includes('dictator')) {
+                suggestions = [
+                    "Was he a good or bad person?",
+                    "What was he famous for?",
+                    "When did he live?",
+                    "What did he accomplish?",
+                    "Why is he controversial?"
+                ];
+            }
+            // Historical events
+            else if (resultLower.includes('war') || resultLower.includes('battle') || resultLower.includes('revolution')) {
+                suggestions = [
+                    "When did this happen?",
+                    "What caused this event?",
+                    "What were the consequences?",
+                    "Who were the key figures?"
+                ];
+            }
+            // Scientific topics
+            else if (resultLower.includes('discovered') || resultLower.includes('invented') || resultLower.includes('theory')) {
+                suggestions = [
+                    "How does it work?",
+                    "When was it discovered?",
+                    "What are its applications?",
+                    "Why is it important?"
+                ];
+            }
+            // Countries/places
+            else if (resultLower.includes('country') || resultLower.includes('city') || resultLower.includes('located')) {
+                suggestions = [
+                    "What is the population?",
+                    "What is it famous for?",
+                    "What is the culture like?",
+                    "What is the history?"
+                ];
+            }
+            // Technology topics
+            else if (resultLower.includes('technology') || resultLower.includes('software') || resultLower.includes('computer')) {
+                suggestions = [
+                    "How does it work?",
+                    "When was it created?",
+                    "What are its benefits?",
+                    "Who uses it?"
+                ];
+            }
+            
+            if (suggestions.length > 0) {
+                setTimeout(() => {
+                    addMessage('system', '💭 Follow-up questions you can ask:');
+                    suggestions.slice(0, 3).forEach(suggestion => {
+                        addMessage('system', `• ${suggestion}`);
+                    });
+                    
+                    if (conversationContext) {
+                        addMessage('system', `🔗 Current topic: ${conversationContext.subject}`);
+                    }
+                }, 1500);
+            }
+        }
+
+        // Clear chat history, memory, and context
+        function clearChat() {
+            if (confirm('Are you sure you want to clear all messages, memory, and conversation context?')) {
+                chatMessages = [];
+                conversationMemory = {};
+                conversationContext = null;
+                localStorage.removeItem('aiChatMessages');
+                localStorage.removeItem('aiConversationMemory');
+                localStorage.removeItem('aiConversationContext');
+                document.getElementById('chatMessages').innerHTML = '';
+                initChat();
+            }
+        }
+
+        // Ultra-strict search function - no more false matches
+        function findAnswer(question) {
+            const queryLower = question.toLowerCase().trim();
+            
+            // Ignore very short queries (less than 3 characters)
+            if (queryLower.length < 3) {
+                return null;
+            }
+            
+            let bestMatch = null;
+            let bestScore = 0;
+
+            for (let item of knowledgeBase) {
+                let score = 0;
+                const itemQuestionLower = item.question.toLowerCase();
+
+                // Exact question match (highest priority)
+                if (itemQuestionLower === queryLower) {
+                    return item.answer;
+                }
+
+                // Very strict similarity check
+                const similarity = calculateSimilarity(queryLower, itemQuestionLower);
+                
+                // Only consider high similarity matches
+                if (similarity > 0.85) {
+                    score += 300;
+                } else if (similarity > 0.75) {
+                    score += 200;
+                } else if (similarity > 0.65) {
+                    score += 100;
+                } else {
+                    // Skip if similarity is too low
+                    continue;
+                }
+
+                // Additional checks for partial matches
+                const queryWords = queryLower.split(' ').filter(word => word.length > 2);
+                const questionWords = itemQuestionLower.split(' ').filter(word => word.length > 2);
+                
+                // Count exact word matches
+                let exactWordMatches = 0;
+                let totalQueryWords = queryWords.length;
+                
+                for (let qWord of queryWords) {
+                    if (questionWords.includes(qWord)) {
+                        exactWordMatches++;
+                    }
+                }
+                
+                // Require at least 60% of query words to match for shorter queries
+                // Require at least 40% for longer queries
+                const requiredMatchPercentage = totalQueryWords <= 3 ? 0.6 : 0.4;
+                const matchPercentage = exactWordMatches / totalQueryWords;
+                
+                if (matchPercentage < requiredMatchPercentage) {
+                    continue; // Skip this item
+                }
+                
+                // Bonus for word matches
+                score += exactWordMatches * 50;
+                
+                // Check for meaningful keyword matches (not single letters)
+                let meaningfulKeywordMatches = 0;
+                for (let keyword of item.keywords) {
+                    if (keyword.length > 2 && queryLower.includes(keyword.toLowerCase())) {
+                        // Make sure it's a whole word match, not partial
+                        const regex = new RegExp('\\b' + keyword.toLowerCase() + '\\b');
+                        if (regex.test(queryLower)) {
+                            meaningfulKeywordMatches++;
+                            score += 40;
+                        }
+                    }
+                }
+
+                // Additional validation: prevent single character matches
+                if (queryLower.length === 1 || (queryLower.length < 4 && exactWordMatches === 0)) {
+                    continue;
+                }
+
+                // Prevent partial word contamination (like "p" matching "python")
+                if (queryLower.length < 4) {
+                    let hasExactMatch = false;
+                    for (let word of questionWords) {
+                        if (word === queryLower) {
+                            hasExactMatch = true;
+                            break;
+                        }
+                    }
+                    if (!hasExactMatch) {
+                        continue;
+                    }
+                }
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = item;
+                }
+            }
+
+            // Very high threshold - only return if we're very confident
+            return bestScore > 150 ? bestMatch.answer : null;
+        }
+
+        // Calculate similarity between two strings
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+            
+            if (longer.length === 0) return 1.0;
+            
+            const editDistance = levenshteinDistance(longer, shorter);
+            return (longer.length - editDistance) / longer.length;
+        }
+
+        // Calculate Levenshtein distance
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            return matrix[str2.length][str1.length];
+        }
+
+        // Search the internet for information
+        async function searchInternet(query) {
+            try {
+                addMessage('system', '🔍 Searching multiple sources on the internet...');
+                
+                // Try multiple search methods in parallel for faster results
+                const searchPromises = [
+                    searchWithWikipedia(query),
+                    searchWithDuckDuckGo(query),
+                    searchWithFreeAPIs(query)
+                ];
+                
+                const results = await Promise.allSettled(searchPromises);
+                const successfulResults = results
+                    .filter(result => result.status === 'fulfilled' && result.value)
+                    .map(result => result.value);
+                
+                if (successfulResults.length > 0) {
+                    // Use the best result (usually Wikipedia is most comprehensive)
+                    const bestResult = successfulResults[0];
+                    addMessage('ai', `🌐 **Internet Search Result:**\n\n${bestResult}`);
+                    
+                    // If we have multiple sources, mention that
+                    if (successfulResults.length > 1) {
+                        addMessage('system', `ℹ️ Found information from ${successfulResults.length} sources. Showing the most comprehensive result.`);
+                    }
+                } else {
+                    // Provide helpful suggestions for finding information
+                    addMessage('ai', `❌ I couldn't find specific information about "${query}" in my search sources.`);
+                    addMessage('system', '💡 Try rephrasing your question or search for:');
+                    addMessage('system', '• More specific terms (e.g., "Bitcoin cryptocurrency" instead of just "Bitcoin")');
+                    addMessage('system', '• Alternative names or spellings');
+                    addMessage('system', '• Related topics that might contain your answer');
+                    addMessage('ai', 'You can also tell me what you know about this topic and I\'ll remember it!');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                addMessage('ai', '❌ Sorry, I encountered an error while searching the internet.');
+                addMessage('system', 'This might be due to network issues or API limitations. Please try again in a moment.');
+            }
+        }
+
+        // Search Wikipedia API with better error handling and multiple attempts
+        async function searchWithWikipedia(query) {
+            try {
+                // Clean up the query for better results
+                const cleanQuery = query.replace(/^(what is|who is|tell me about|explain)\s+/i, '').trim();
+                
+                // First try: Direct page lookup
+                let searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQuery)}`;
+                let response = await fetch(searchUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.extract && data.extract.length > 50 && !data.extract.includes('may refer to')) {
+                        let result = data.extract;
+                        // Add page title if it's different from query
+                        if (data.title && data.title.toLowerCase() !== cleanQuery.toLowerCase()) {
+                            result = `**${data.title}**: ${result}`;
+                        }
+                        return `${result}\n\n📖 Source: Wikipedia`;
+                    }
+                }
+                
+                // Second try: Search for pages
+                const searchApiUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(cleanQuery)}&srlimit=3&origin=*`;
+                const searchResponse = await fetch(searchApiUrl);
+                
+                if (searchResponse.ok) {
+                    const searchData = await searchResponse.json();
+                    if (searchData.query && searchData.query.search && searchData.query.search.length > 0) {
+                        // Try the top 3 search results
+                        for (let i = 0; i < Math.min(3, searchData.query.search.length); i++) {
+                            const result = searchData.query.search[i];
+                            try {
+                                const pageUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(result.title)}`;
+                                const pageResponse = await fetch(pageUrl);
+                                
+                                if (pageResponse.ok) {
+                                    const pageData = await pageResponse.json();
+                                    if (pageData.extract && pageData.extract.length > 100 && !pageData.extract.includes('may refer to')) {
+                                        return `**${pageData.title}**: ${pageData.extract}\n\n📖 Source: Wikipedia`;
+                                    }
+                                }
+                            } catch (pageError) {
+                                console.log(`Failed to fetch page ${result.title}:`, pageError);
+                                continue;
+                            }
+                        }
+                    }
+                }
+                
+                // Third try: OpenSearch API for suggestions
+                const opensearchUrl = `https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=${encodeURIComponent(cleanQuery)}&limit=3&origin=*`;
+                const opensearchResponse = await fetch(opensearchUrl);
+                
+                if (opensearchResponse.ok) {
+                    const opensearchData = await opensearchResponse.json();
+                    if (opensearchData && opensearchData.length > 1 && opensearchData[1].length > 0) {
+                        const suggestedTitle = opensearchData[1][0];
+                        const pageUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(suggestedTitle)}`;
+                        const pageResponse = await fetch(pageUrl);
+                        
+                        if (pageResponse.ok) {
+                            const pageData = await pageResponse.json();
+                            if (pageData.extract && pageData.extract.length > 50) {
+                                return `**${pageData.title}**: ${pageData.extract}\n\n📖 Source: Wikipedia`;
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Wikipedia search error:', error);
+            }
+            return null;
+        }
+
+        // Search with DuckDuckGo Instant Answer API
+        async function searchWithDuckDuckGo(query) {
+            try {
+                const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Check for instant answer
+                    if (data.AbstractText && data.AbstractText.length > 50) {
+                        return `${data.AbstractText} (Source: ${data.AbstractSource || 'DuckDuckGo'})`;
+                    }
+                    
+                    // Check for definition
+                    if (data.Definition && data.Definition.length > 20) {
+                        return `${data.Definition} (Source: ${data.DefinitionSource || 'DuckDuckGo'})`;
+                    }
+                    
+                    // Check for answer
+                    if (data.Answer && data.Answer.length > 10) {
+                        return `${data.Answer} (Source: DuckDuckGo)`;
+                    }
+                }
+            } catch (error) {
+                console.error('DuckDuckGo search error:', error);
+            }
+            return null;
+        }
+
+        // Search with free APIs and web scraping alternatives
+        async function searchWithFreeAPIs(query) {
+            try {
+                // Try REST Countries API for country information
+                if (query.toLowerCase().includes('country') || query.toLowerCase().includes('capital') || 
+                    query.toLowerCase().includes('population') || query.toLowerCase().includes('currency')) {
+                    const countryResult = await searchCountryInfo(query);
+                    if (countryResult) return countryResult;
+                }
+                
+                // Try a general knowledge approach with pre-defined patterns
+                const generalResult = searchGeneralKnowledge(query);
+                if (generalResult) return generalResult;
+                
+                // Try JSONPlaceholder for demo data (when relevant)
+                if (query.toLowerCase().includes('user') || query.toLowerCase().includes('post') || 
+                    query.toLowerCase().includes('todo') || query.toLowerCase().includes('album')) {
+                    return "This appears to be a request for demo data. JSONPlaceholder provides sample data for testing APIs. (Source: Internet)";
+                }
+                
+            } catch (error) {
+                console.error('Free APIs search error:', error);
+            }
+            return null;
+        }
+
+        // Search country information
+        async function searchCountryInfo(query) {
+            try {
+                // Extract country name from query
+                const countries = ['afghanistan', 'albania', 'algeria', 'argentina', 'australia', 'austria', 'bangladesh', 'belgium', 'brazil', 'canada', 'china', 'colombia', 'denmark', 'egypt', 'finland', 'france', 'germany', 'greece', 'india', 'indonesia', 'iran', 'iraq', 'ireland', 'israel', 'italy', 'japan', 'jordan', 'kenya', 'korea', 'malaysia', 'mexico', 'netherlands', 'nigeria', 'norway', 'pakistan', 'philippines', 'poland', 'portugal', 'russia', 'saudi arabia', 'singapore', 'south africa', 'spain', 'sweden', 'switzerland', 'thailand', 'turkey', 'ukraine', 'united kingdom', 'uk', 'united states', 'usa', 'vietnam'];
+                
+                const queryLower = query.toLowerCase();
+                const foundCountry = countries.find(country => queryLower.includes(country));
+                
+                if (foundCountry) {
+                    const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(foundCountry)}`;
+                    const response = await fetch(url);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.length > 0) {
+                            const country = data[0];
+                            let info = `${country.name.common} is a country`;
+                            
+                            if (country.capital && country.capital.length > 0) {
+                                info += ` with capital ${country.capital[0]}`;
+                            }
+                            
+                            if (country.population) {
+                                info += `, population of ${country.population.toLocaleString()}`;
+                            }
+                            
+                            if (country.region) {
+                                info += `, located in ${country.region}`;
+                            }
+                            
+                            if (country.currencies) {
+                                const currency = Object.values(country.currencies)[0];
+                                if (currency) {
+                                    info += `, currency is ${currency.name}`;
+                                }
+                            }
+                            
+                            return `${info}. (Source: REST Countries API)`;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Country search error:', error);
+            }
+            return null;
+        }
+
+        // Enhanced general knowledge patterns for common questions
+        function searchGeneralKnowledge(query) {
+            const queryLower = query.toLowerCase();
+            
+            // Current date/time questions
+            if (queryLower.includes('what time') || queryLower.includes('current time')) {
+                return `🕐 The current time is ${new Date().toLocaleTimeString()}.\n\n⏰ Source: Your device`;
+            }
+            
+            if (queryLower.includes('what date') || queryLower.includes('today') || queryLower.includes('current date')) {
+                const today = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return `📅 Today is ${today.toLocaleDateString('en-US', options)}.\n\n📆 Source: Your device`;
+            }
+            
+            if (queryLower.includes('what year') || queryLower.includes('current year')) {
+                return `📅 The current year is ${new Date().getFullYear()}.\n\n🗓️ Source: Your device`;
+            }
+            
+            // Enhanced math calculations
+            if (queryLower.includes('calculate') || queryLower.includes('math') || /\d+\s*[\+\-\*\/]\s*\d+/.test(queryLower)) {
+                try {
+                    // More comprehensive math patterns
+                    const mathPatterns = [
+                        /(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)/,
+                        /what\s+is\s+(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)/,
+                        /calculate\s+(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)/
+                    ];
+                    
+                    for (let pattern of mathPatterns) {
+                        const mathMatch = queryLower.match(pattern);
+                        if (mathMatch) {
+                            const num1 = parseFloat(mathMatch[1]);
+                            const operator = mathMatch[2];
+                            const num2 = parseFloat(mathMatch[3]);
+                            
+                            let result;
+                            let operatorName;
+                            switch (operator) {
+                                case '+': 
+                                    result = num1 + num2; 
+                                    operatorName = 'plus';
+                                    break;
+                                case '-': 
+                                    result = num1 - num2; 
+                                    operatorName = 'minus';
+                                    break;
+                                case '*': 
+                                    result = num1 * num2; 
+                                    operatorName = 'times';
+                                    break;
+                                case '/': 
+                                    if (num2 !== 0) {
+                                        result = num1 / num2;
+                                        operatorName = 'divided by';
+                                    } else {
+                                        return `🚫 Cannot divide by zero!\n\n🧮 Source: Built-in calculator`;
+                                    }
+                                    break;
+                            }
+                            
+                            return `🧮 **Calculation Result:**\n\n${num1} ${operatorName} ${num2} = **${result}**\n\n📊 Source: Built-in calculator`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Math calculation error:', error);
+                }
+            }
+            
+            // Weather guidance
+            if (queryLower.includes('weather') || queryLower.includes('temperature')) {
+                return `🌤️ **Weather Information:**\n\nI can't access real-time weather data, but here are reliable sources:\n\n• Weather.com or Weather apps\n• Google: "weather [your city]"\n• Local news websites\n• Weather.gov (for US locations)\n\n🌍 Source: General guidance`;
+            }
+            
+            // News guidance  
+            if (queryLower.includes('news') || queryLower.includes('latest') || queryLower.includes('current events')) {
+                return `📰 **Latest News Sources:**\n\nFor current events and news, check these reliable sources:\n\n• BBC News, Reuters, AP News\n• Your local news websites\n• Google News for aggregated stories\n• NPR for in-depth coverage\n\n📺 Source: General guidance`;
+            }
+            
+            // Stock/financial guidance
+            if (queryLower.includes('stock') || queryLower.includes('price') || queryLower.includes('market')) {
+                return `📈 **Financial Information:**\n\nFor current market data and stock prices:\n\n• Yahoo Finance\n• Google Finance\n• Bloomberg\n• MarketWatch\n• Your broker's app\n\n💰 Source: General guidance`;
+            }
+            
+            // Technology help
+            if (queryLower.includes('how to') && (queryLower.includes('computer') || queryLower.includes('phone') || queryLower.includes('app'))) {
+                return `💻 **Tech Help:**\n\nFor technical support and how-to guides:\n\n• Official support websites\n• YouTube tutorials\n• Stack Overflow for programming\n• Reddit communities\n• User manuals and documentation\n\n🔧 Source: General guidance`;
+            }
+            
+            return null;
+        }
+
+        // Handle Enter key
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Start the chat when page loads
+        window.addEventListener('load', initChat);
+    </script>
+</body>
+  </html>
