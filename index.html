@@ -1013,10 +1013,14 @@
                     if (conversationContext) {
                         addMessage('system', `🔗 Current topic: ${conversationContext.subject} - Try rephrasing your question.`);
                     }
+                    // Conversational fallback so the AI can still respond helpfully
+                    addMessage('ai', generateConversationalFallback(query));
                 }
             } catch (error) {
                 console.error('Search error:', error);
                 addMessage('ai', '❌ Sorry, I encountered an error while searching the internet.');
+                // Conversational fallback on error
+                addMessage('ai', generateConversationalFallback(query));
             }
         }
 
@@ -1280,11 +1284,15 @@
                     addMessage('system', '• Alternative names or spellings');
                     addMessage('system', '• Related topics that might contain your answer');
                     addMessage('ai', 'You can also tell me what you know about this topic and I\'ll remember it!');
+                    // Conversational fallback when no internet result is found
+                    addMessage('ai', generateConversationalFallback(query));
                 }
             } catch (error) {
                 console.error('Search error:', error);
                 addMessage('ai', '❌ Sorry, I encountered an error while searching the internet.');
                 addMessage('system', 'This might be due to network issues or API limitations. Please try again in a moment.');
+                // Conversational fallback on error
+                addMessage('ai', generateConversationalFallback(query));
             }
         }
 
@@ -1558,6 +1566,63 @@
             }
             
             return null;
+        }
+
+        // Conversational fallback: produce friendly guidance when no specific answer is found
+        function generateConversationalFallback(query) {
+            try {
+                const lower = (query || '').toLowerCase().trim();
+                const name = (conversationMemory && conversationMemory.name && conversationMemory.name[0]) ? conversationMemory.name[0] : null;
+
+                const variants = [
+                    "Here's my take:",
+                    "Speaking practically:",
+                    "From everyday experience:",
+                    "In general terms:"
+                ];
+                const hash = (s) => {
+                    let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+                    return Math.abs(h);
+                };
+                const choose = (arr) => arr[hash(lower || 'fallback') % arr.length];
+
+                // Small-talk and daily-life heuristics
+                if (/\bhow are (you|u)\b|how's it going|how are things/.test(lower)) {
+                    return `I'm doing well${name ? ', ' + name : ''}! Thanks for asking. How are you today?`;
+                }
+                if (/(good\s+morning|good\s+evening|good\s+afternoon|hello|hi|hey)\b/.test(lower)) {
+                    return `Hi${name ? ' ' + name : ''}! ${choose(variants)} what can I help you with today?`;
+                }
+                if (/(routine|day|morning|evening).*(what|how)|daily\s+life|everyday/.test(lower)) {
+                    return `${choose(variants)} build a simple daily flow: pick one priority, schedule a focused block, take a short walk, and keep meals and hydration regular. What would a good day look like for you?`;
+                }
+                if (/(cook|food|eat|meal|recipe|dinner|breakfast|lunch)/.test(lower)) {
+                    return `${choose(variants)} keep it simple: protein + veggie + carb. For example, rice with roasted veggies and chicken, or an omelet with spinach and toast. Any ingredients on hand?`;
+                }
+                if (/(study|learn|homework|exam|test|revision)/.test(lower)) {
+                    return `${choose(variants)} try 25–50 minute focus blocks with 5–10 minute breaks, quiz yourself briefly, and teach back what you learned. What subject are you working on?`;
+                }
+                if (/(exercise|workout|gym|run|walk|yoga|stretch)/.test(lower)) {
+                    return `${choose(variants)} consistency beats intensity: aim for 2–3 strength days weekly and daily light movement. Even a 10‑minute walk counts. What kind of movement do you enjoy?`;
+                }
+                if (/(stress|sleep|anx|anxiety|tired|burnout|overwhelmed)/.test(lower)) {
+                    return `${choose(variants)} try a short breathing reset (inhale 4s, exhale 6s), tidy your space, and pick the smallest next step. How much sleep did you get last night?`;
+                }
+                if (/(travel|trip|vacation|packing|flight|hotel)/.test(lower)) {
+                    return `${choose(variants)} plan with the rule of three: 3 sights, 3 meals, 3 backups. Pack light and keep essentials handy. Where are you heading?`;
+                }
+                if (/(money|budget|finance|saving|savings|spend)/.test(lower)) {
+                    return `${choose(variants)} a simple 50/30/20 split works: needs/wants/savings. Automate transfers right after income arrives. What are you saving for?`;
+                }
+                if (/(career|job|interview|resume|cv)/.test(lower)) {
+                    return `${choose(variants)} tailor your resume to the role, quantify impact, and collect 2–3 STAR stories. What role are you targeting?`;
+                }
+
+                const polite = name ? ` ${name}` : '';
+                return `${choose(variants)} I can share practical guidance even without a specific source.${polite} Tell me a bit more so I can tailor it.`;
+            } catch (_) {
+                return "I can share a general perspective if you'd like—tell me a bit more so I can tailor it.";
+            }
         }
 
         // Handle Enter key
