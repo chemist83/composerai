@@ -574,7 +574,12 @@
 
                 const textSpan = document.createElement('span');
                 textSpan.className = 'message-text';
-                textSpan.textContent = content;
+                if (animate) {
+                    textSpan.textContent = '';
+                    typewriteText(textSpan, content, messagesDiv);
+                } else {
+                    textSpan.textContent = content;
+                }
 
                 messageDiv.appendChild(icon);
                 messageDiv.appendChild(textSpan);
@@ -596,6 +601,26 @@
                     messageDiv.style.transform = 'translateY(0)';
                 }, 50);
             }
+        }
+
+        // Typewriter effect for AI messages
+        function typewriteText(targetEl, fullText, containerEl) {
+            const total = fullText.length;
+            if (total === 0) return;
+            // Dynamic speed: cap total duration ~3s for long texts
+            const perCharMs = Math.max(8, Math.min(30, Math.floor(3000 / Math.max(1, total))));
+            let i = 0;
+            const tick = () => {
+                // Append several characters per tick for smoother feel on long texts
+                const step = total > 300 ? 3 : 1;
+                i = Math.min(total, i + step);
+                targetEl.textContent = fullText.slice(0, i);
+                if (containerEl) containerEl.scrollTop = containerEl.scrollHeight;
+                if (i < total) {
+                    setTimeout(tick, perCharMs);
+                }
+            };
+            tick();
         }
 
         // Send message
@@ -685,6 +710,8 @@
                 .replace(/calculate\s+/g, '')
                 .replace(/solve\s+/g, '')
                 .replace(/equals\s*/g, '')
+                .replace(/[=?]/g, '')
+                .replace(/,/g, '')
                 .replace(/to\s+the\s+power\s+of/g, '^')
                 .replace(/power\s+of/g, '^')
                 .replace(/square\s+root\s+of/g, 'sqrt ')
